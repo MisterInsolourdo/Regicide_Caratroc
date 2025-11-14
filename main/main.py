@@ -1,207 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Oct 24 08:58:15 2025
-
-@author: Formation
+@author: Fabien
 """
 
-import random
-
-
-
-
-class Carte:
-    def __init__(self,valeur,couleur):
-        self.valeur = valeur
-        self.couleur = Couleur(couleur)
-    def __str__(self):
-        return f"{self.valeur} de " + str(self.couleur)
-    def __eq__(self,other):
-        return (self.couleur == other.couleur) and (self.valeur == other.valeur)
-        
-class Tete(Carte):
-    def __init__(self,valeur, couleur, Attq, PVs, Immu, visible):
-        super(Tete, self).__init__(valeur,couleur)
-        self.Attq = Attq
-        self.PVs = PVs
-        self.Immu = Immu
-        self.visible = visible
-        
-    def DevientVisible(self):
-        self.visible = True
-        
-    def PrendreDegats(self,n):
-        self.PVs = self.PVs-n
-        
-    def DiminueAttaque(self,n):
-        self.Attq = self.Attq - n
-        if self.Attq < 0:
-            self.Attq = 0
-                
-        
-    def __str__(self):
-        s = super(Tete,self).__str__()
-        s = s.replace("10","Valet").replace("15", "Dame").replace("20","Roi")
-
-        return s + f" Attq : {self.Attq}, PVs : {self.PVs}, Immunité : {self.Immu}"
-        
-class Couleur:
-    def __init__(self,couleur):
-        dico = {"d":"Carreau", "c":"Coeur", "p":"Pique", "t":"Trèfle", "j":"Joker"}
-        if couleur in dico.keys():
-            self.couleur = dico[couleur]
-        elif couleur in dico.values():
-            self.couleur = couleur
-        else:
-            print("Erreur dans l'attribution de couleur")
-            self.couleur = None
-            
-    def __str__(self):
-        return self.couleur
-    def __eq__(self,other):
-        return self.couleur == other.couleur
-    def __ne__(self,other):
-        return not self.__eq__(other)
-        
-class Pioche:
-    def __init__(self,nb_joueur):
-        
-        self.Pioche = []
-        if nb_joueur==4:
-            Joker = 2
-        if nb_joueur==3:
-            Joker = 1
-        else:
-            Joker = 0
-        for i in range(1,11):
-            for couleur in ['Carreau','Coeur','Trèfle','Pique']:
-                self.Pioche.append(Carte(str(i),couleur))
-        for i in range(Joker):
-            self.Pioche.append(Carte(0,'Joker'))
-               
-        random.shuffle(self.Pioche)
-        
-    def Recup(self,ListeCartes):
-        self.Pioche = self.Pioche + ListeCartes
-        
-    def JoueurPioche(self,J):
-        J.AjouteCarte(self.Pioche[0])
-        self.Pioche = self.Pioche[1:]
-        
-        
-    def __str__(self):
-        if self.Pioche == []:
-            return "La Pioche est vide"
-        s = ""
-        for Carte in self.Pioche:
-            s = s + str(Carte) + "\n"
-        return s
-       
-class Defausse:
-    def __init__(self):
-        self.Defausse = []
-        
-    def AddDefausse(self,listeCartes):
-        for Cartes in listeCartes:
-            self.Defausse.append(Cartes)
-            
-    def VideDefausse(self,n,deck):
-        nb_cartes = n
-        if n > len(self.Defausse):
-            nb_cartes = len(self.Defausse)
-        Cartes_Recup = reversed(self.Defausse[-nb_cartes:])
-        self.Defausse = self.Defausse[:-nb_cartes]
-        deck.Recup(Cartes_Recup)
-        
-        
-    def __str__(self):
-        if self.Defausse == []:
-            return "La défausse est vide"
-        s = ""
-        for Carte in self.Pioche:
-            s = s + str(Carte) + "\n"
-        return s
+from cartes import Carte, Couleur
+from joueur import Joueur
+from listes import Pioche, Defausse, ListeTete, CartesJouees
     
-class Joueur:
-    def __init__(self,numero,main,nb_joueur):
-        self.numero = numero
-        self.main = main
-        self.taillemax = 9-nb_joueur
-    
-    def Pioche(self,deck):
-        if len(self.main)==self.taillemax:
-            return False
-        else:
-            deck.JoueurPioche(self)
-            return True
-        
-    def AjouteCarte(self,card):
-        self.main.append(card)
-        
-    def JoueCartes(self,combo):
-        for el in combo:
-            Carte_A_Checker = Carte(el[:-1],el[-1])
-            i = self.main.index(Carte_A_Checker)
-            self.main.pop(i)
-        print(self)
-        
-    def __str__(self):
-        s = f'Main du joueur {self.numero} : '
-        for carte in self.main:
-            s+= str(carte) + ";"
-        return s
-                   
-class ListeTete:
-    def __init__(self):
-        
-        Valet,Dame,Roi = [],[],[]
-        for couleur in ['d','c','t','p']:
-            Valet.append(Tete(10, couleur, 10, 20, Couleur(couleur), True))
-            Dame.append(Tete(15, couleur, 15, 30, Couleur(couleur), False))
-            Roi.append(Tete(20, couleur, 20, 40, Couleur(couleur), False))
-        
-        random.shuffle(Valet) 
-        random.shuffle(Dame)
-        random.shuffle(Roi)
-        self.liste = Valet + Dame + Roi
-        
-    def EstVide(self):
-        return self.liste == []
-    
-    def EstToutInvisible(self):
-        Bool = True
-        for tete in self.liste:
-            if tete.visible:
-                Bool = False
-        return Bool
-    
-    def Revele4Cartes(self):
-        for i in range(4):
-            self.liste[i].DevientVisible()
-            
-    def Top(self):
-        return self.liste[0]
-        
-    def __str__(self):
-        s = ""
-        for Tete in self.liste:
-            if Tete.visible:
-                s += str(Tete) + '\n'
-            else:
-                s += "*" + '\n'
-        return s
-    
-class CartesJouees:
-    def __init__(self):
-        self.liste = []
-    def AjoutCarte(self, combo):
-        l_carte = []
-        for combi in combo:
-            new_card = Carte(combi[:-1],combi[-1])
-            l_carte.append(new_card)
-        self.liste = self.liste + l_carte
-        
-
 class Plateau:
     def __init__(self,nb_joueur):
         self.Pioche = Pioche(nb_joueur)
@@ -217,22 +23,68 @@ class Plateau:
         NumJoueur = int(input("Sélectionner le joueur débutant la partie : "))
         JoueurActuel = self.ListeJoueurs[NumJoueur]
         while not self.Fin:
-            SaisieInvalide = True
             if self.ListeTete.EstVide():
                 self.Win = True
                 self.Fin = True
             elif self.ListeTete.EstToutInvisible():
                 self.ListeTete.Revele4Cartes()
+            if self.Fin:
+                continue
+            SaisieInvalide = True
             while SaisieInvalide:
-                print(self.ListeTete.liste[0])
+                print(self.ListeTete)
+                print(f"Pioche : {len(self.Pioche)} ; Défausse : {len(self.Defausse)}")
+                print(self.ListeTete.Top())
                 print(JoueurActuel)
                 selection_carte = input("Sélectionner les cartes à jouer : ")
-                SaisieInvalide = not(self.ComboFormat(selection_carte) and self.ComboAcceptable(selection_carte) and self.ComboMain(selection_carte,JoueurActuel))
-            Combo = selection_carte.split(";")
-            self.CartesJouees.AjoutCarte(Combo)
-            JoueurActuel.JoueCartes(Combo)
-            self.ListeTete.Top().PrendreDegats(self.SommeCombo(Combo))
-            self.ActivePouvoir(Combo,NumJoueur)
+                if selection_carte == "passe":
+                    SaisieInvalide = False
+                else:
+                    SaisieInvalide = not(self.ComboFormat(selection_carte) and self.ComboAcceptable(selection_carte) and self.ComboMain(selection_carte,JoueurActuel) or selection_carte == "passe")
+            if selection_carte != "passe":
+                Combo = selection_carte.split(";")
+                self.CartesJouees.AjoutCarte(Combo)
+                JoueurActuel.JoueCartes(Combo)
+                self.ListeTete.Top().PrendreDegats(self.SommeCombo(Combo))
+                Result = self.ActivePouvoir(Combo,NumJoueur)
+                if Result != None:
+                    JoueurActuel = self.ListeJoueurs[Result]
+                    continue
+            else:
+                pass
+            
+            if self.ListeTete.Top().VerifieMort():
+                print("L'adversaire est mort.\n")
+                self.Defausse.AddDefausse(self.CartesJouees.liste)
+                self.CartesJouees.Reset()
+                self.ListeTete.Top().EstUneCarte = True
+                if self.ListeTete.Top().DegatsExact():
+                    print("Wow ! Exact Damage !\nLa carte de l'adversaire est placée au-dessus de la pioche. \n")
+                    self.ListeTete.TopVersPioche(self.Pioche)
+                else:
+                    print("La carte de l'adversaire est placée en bas de la défausse. \n ")
+                    self.ListeTete.TopVersDefausse(self.Defausse)
+                
+            else:
+                if self.ListeTete.Top().Attq > 0:
+                    print(f"L'adversaire vous attaque avec une puissance de {self.ListeTete.Top().Attq}, vous devez défausser cette somme pour survivre")
+                    self.Fin = not JoueurActuel.VerifDefense(self.ListeTete.Top().Attq)
+                    if self.Fin:
+                        print("Perdu")
+                        continue
+                    SaisieInvalide = True
+                    while SaisieInvalide:
+                        print(JoueurActuel)
+                        selection_carte = input("Sélectionner les cartes à jouer : ")
+                        SaisieInvalide = not(self.ComboFormat(selection_carte) and self.ComboMain(selection_carte,JoueurActuel) and self.ComboAttq(selection_carte,self.ListeTete.Top().Attq))
+                    Combo = selection_carte.split(";")
+                    JoueurActuel.DefausseCarte(Combo,self.Defausse)
+                else:
+                    print("L'adversaire n'a pas d'attaque, il ne peut pas vous attaquer.")
+                    
+                NumJoueur = (NumJoueur+1)%(len(self.ListeJoueurs))
+                input(f"Le joueur {NumJoueur} va prendre la main, appuyer sur Entrée pour continuer : ")
+                JoueurActuel = self.ListeJoueurs[NumJoueur]                
                 
     def PiocheInitiale(self):
         for joueur in self.ListeJoueurs:
@@ -306,7 +158,6 @@ class Plateau:
             valeur = combi[:-1]
             couleur = combi[-1]
             Carte_A_Checker = Carte(valeur,couleur)
-            print(Carte_A_Checker in main)
             if Carte_A_Checker not in main:
                 print("Une carte du combo n'est pas présente dans votre main.")
                 Bool = False
@@ -328,19 +179,37 @@ class Plateau:
                 s += int(el[:-1])
                 
         return s
+    
+    def ComboAttq(self,combo,Attq):
+        Combo = combo.split(";")
+        Somme = self.SommeCombo(Combo)
+        if Somme < Attq:
+            print(f"Vous ne défaussez que {Somme} par rapport à {Attq}, ce n'est pas assez.")
+            return False
+        else:
+            return True
+    
     def ActivePouvoir(self,combo,num_joueur):
         Somme = self.SommeCombo(combo)
         Immu = self.ListeTete.Top().Immu
         for el in combo:
             if el[-1] == 'c' and Immu != Couleur('c'):
+                print(f"Récupération de {Somme} cartes de la défausse.")
                 self.Defausse.VideDefausse(Somme,self.Pioche)
             if el[-1] == 'p' and Immu != Couleur('p'):
+                print(f"L'adversaire perd {Somme} Attq")
                 self.ListeTete.Top().DiminueAttaque(Somme)
             if el[-1] == 't' and Immu != Couleur('t'):
+                print("Doubles dégats !")
                 self.ListeTete.Top().PrendreDegats(Somme)
             if el[-1] == 'j':
+                print("Annulation du pouvoir")
                 self.ListeTete.Top().Immu = Couleur('j')
+                NumJoueur = int(input("Un joker a été joué, sélectionnez le joueur jouant après :"))
+                return NumJoueur
+            
             if el[-1] == 'd' and Immu != Couleur('d'):
+                print(f"Pioche de {Somme} cartes.")
                 self.PiocheCarreau(Somme,num_joueur)
                 
     def PiocheCarreau(self,n,num_joueur):
@@ -353,13 +222,6 @@ class Plateau:
                 s = s-1
             i = i-1
             joueur = (joueur+1)%(len(self.ListeJoueurs))
-            print(joueur)
-            
-            
-            
-            
-                    
-                
         
     def __str__(self):
         s = ''
@@ -369,6 +231,6 @@ class Plateau:
         
         
 if __name__ == "__main__":
-    plat = Plateau(3)
+    plat = Plateau(2)
     plat.BoucleDeJeu()
     
