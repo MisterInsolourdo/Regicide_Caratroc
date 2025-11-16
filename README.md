@@ -106,8 +106,9 @@ Ainsi le menu suivant sert simplement à changer de joueur.
 On choisit le joueur qui prend la main dans la QSpinBox (1)
 Puis on valide
 
-
-
+Le but du jeu est des vaincre chacunes des têtes.
+Et sur pourquoi il faut les vaincre... Hum... 
+[LesForcesDuMal.wav](https://github.com/user-attachments/files/23570927/LesForcesDuMal.wav)
 
 
 
