@@ -63,7 +63,14 @@ Entre le tour de chaque joueur, un message apparait et attend juste qu'on appuie
 ### Interface graphique (UI)
 
 Le jeu se joue de la même façon en mode UI.
+
 <img width="799" height="621" alt="image" src="https://github.com/user-attachments/assets/6ea785da-38e1-4579-8008-ac31351cab66" />
+
+Les combinaisons se jouent en cliquant sur les cartes que l'on souhaite jouer puis en cliquant sur le bouton "Valider"
+Si le joueur ne veut pas jouer, il peut cliquer sur passer (Il se fera quand même attaquer)
+
+Lors de la phase de défense : 
+
 
 
 
