@@ -228,10 +228,9 @@ class Plateau:
         Les dégats sont infligés
         Les pouvoirs de chacunes des cartes sont appliqués
         """
-        
-        
         if not UI:
             SaisieInvalide = True
+            #Boucle pour obtenir une saisie valide
             while SaisieInvalide:
                 print(self.ListeTete)
                 print(f"Pioche : {len(self.Pioche)} ; Défausse : {len(self.Defausse)}")
@@ -246,7 +245,8 @@ class Plateau:
                     SaisieInvalide = not(self.ComboFormat(selection_carte) and self.ComboAcceptable(selection_carte) and self.ComboMain(selection_carte) or selection_carte == "passe")
         else:
             selection_carte = UI_Selection
-            
+        
+        #Si le joueur ne passe pas, on joue le combo.
         if selection_carte != "passe":
             Combo = selection_carte.split(";")
             self.CartesJouees.AjoutCarte(Combo)
@@ -256,29 +256,38 @@ class Plateau:
             if Result != None:
                 self.JoueurActuel = self.ListeJoueurs[self.NumJoueur]
                 return True
+            
+        #Si le joueur a passé, on ne fait rien
         else:
             pass
     
     def Phase_Defense(self, UI=False, UI_Selection=None):
+        """Permet de jouer une phase de défense
+        Le joueur doit défausser des cartes pour atteindre une valeur supérieur ou égale à l'Attq de l'adversaire
+        """
+        
         #Si l'adversaire a de l'attaque : Il attaque
         print(f"L'adversaire vous attaque avec une puissance de {self.ListeTete.Top().Attq}, vous devez défausser cette somme pour survivre")
+        
+        #Si le joueur ne peut pas se défendre : Le jeu est perdu
         self.Fin = not self.JoueurActuel.VerifDefense(self.ListeTete.Top().Attq)
         if self.Fin:
             return True
         
         if not UI:
             SaisieInvalide = True
+            #Boucle pour obtenir une saisie valide
             while SaisieInvalide:
                 print(self.JoueurActuel)
                 selection_carte = input("Sélectionner les cartes à jouer : ")
+                #Saisie et Test de la validité du combo
                 SaisieInvalide = not(self.ComboFormat(selection_carte) and self.ComboMain(selection_carte) and self.ComboAttq(selection_carte,self.ListeTete.Top().Attq))
         else:
             selection_carte = UI_Selection
-            
+        
+        #On met en forme le combo et on défausse les cartes de la main du joueur
         Combo = selection_carte.split(";")
         self.JoueurActuel.DefausseCarte(Combo,self.Defausse)
-        
-        #Sinon : On ne fait rien
         
         #On passe au joueur suivant
         self.NumJoueur = (self.NumJoueur+1)%(len(self.ListeJoueurs))
@@ -287,6 +296,8 @@ class Plateau:
         self.JoueurActuel = self.ListeJoueurs[self.NumJoueur]           
                 
     def PiocheCarreau(self,n,num_joueur):
+        """Permet de faire piocher n cartes les joueurs à partir du num_joueur-ème joueur
+        lors de l'activation d'une carte carreau"""
         s = n
         joueur = num_joueur
         i = 8*8

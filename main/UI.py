@@ -27,13 +27,13 @@ class MainWindow(QWidget):
         self.setFixedWidth(800)
         self.setFixedHeight(594)
         
+        #Phase initiale du jeu
         self.Phase = "Attaque"
         
         w = self.width()
         h = self.height()
         
         #On définit les emplacements des différent éléments graphiques.
-        
         #L'adversaire principal.
         self.Adversaire = QtWidgets.QLabel(self)
         self.Adversaire.setGeometry(QtCore.QRect(int(w/3)+50,0,int(w/4),int(h/2)))
@@ -172,53 +172,64 @@ class MainWindow(QWidget):
         self.Musique.play()
             
     def setupUi(self):
+        """Initialise le plateau et la fenêtre principale"""
         self.Plateau.PiocheInitiale()
         self.NumJoueur = 0
         self.JoueurActuel = self.Plateau.ListeJoueurs[self.NumJoueur]
         self.actualise()
         
     def Boucle_de_Jeu(self,selection_carte):
-        #On teste si la saisie est valide
+        """La boucle de jeu en elle-même, celle-ci est appelée lors d'un clic sur le bouton 'Valider' ou 'Passer' """
+        
+        #On teste si la saisie est valide, elle est valide différemment en fonction de la phase en question.
         if self.Phase == "Attaque":
             SaisieInvalide = not(self.Plateau.ComboFormat(selection_carte) and self.Plateau.ComboAcceptable(selection_carte) and self.Plateau.ComboMain(selection_carte) or selection_carte == "passe")
         elif self.Phase == "Défense":
             SaisieInvalide = not(self.Plateau.ComboFormat(selection_carte) and self.Plateau.ComboMain(selection_carte) and self.Plateau.ComboAttq(selection_carte,self.Plateau.ListeTete.Top().Attq))
         
+        #Si on est dans une phase d'Attaque
         if self.Phase == "Attaque":
+            #Si la saisie est valide
             if not SaisieInvalide:
-                #Si on joue un Joker, le tour se finit et on sélectionne un nouveau joueur via l'interface adaptée.
+                #On execute une Phase d'attaque
+                #Et si on joue un Joker, le tour se finit et on sélectionne un nouveau joueur via l'interface adaptée.
                 if self.Plateau.Phase_Attaque(UI=True, UI_Selection=selection_carte)==True:
                     self.ShowInterfaceJoker()
                     #Le return true est juste là pour assurer qu'on sorte de la boucle de jeu.
                     return True
+                
+            #Si la saisie n'est pas valide
             else:
-                self.Text.setText("La sélection est invalide")
+                #On le dit.
+                self.Text.setText(self.Text.text().replace("\nLa sélection est invalide", "") + "\nLa sélection est invalide")
                 #Return None pour ne pas aller plus loin
                 return None
                 
             #On vérifie si l'adversaire est mort ou non. 
             #S'il est mort on reste en phase d'attaque, on change d'adversaire et on garde le même joueur
             if self.Plateau.ListeTete.Top().VerifieMort():
-                print("L'adversaire est mort.\n")
                 self.Plateau.Defausse.AddDefausse(self.Plateau.CartesJouees.liste)
                 self.Plateau.CartesJouees.Reset()
                 self.Plateau.ListeTete.Top().EstUneCarte = True
+                #Si les dégâts sont exacts, il est rajouté en haut de la pioche
                 if self.Plateau.ListeTete.Top().DegatsExact():
-                    print("Wow ! Exact Damage !\nLa carte de l'adversaire est placée au-dessus de la pioche. \n")
                     self.Plateau.ListeTete.TopVersPioche(self.Plateau.Pioche)
+                #Sinon il est envoyé à la défausse
                 else:
-                    print("La carte de l'adversaire est placée en bas de la défausse. \n ")
                     self.Plateau.ListeTete.TopVersDefausse(self.Plateau.Defausse)
                     
             #Sinon on passe à la phase de Défense si l'adversaire a de l'attaque
             else:
+                #Si l'adversaire n'a pas d'attaque, ça ne sert à rien de passer à la phase de défausse
+                #On passe directement au joueur suivant avec une transition
                 if self.Plateau.ListeTete.Top().Attq <= 0:
                     self.NumJoueur = (self.NumJoueur+1)%(len(self.Plateau.ListeJoueurs))
                     self.JoueurActuel = self.Plateau.ListeJoueurs[self.NumJoueur]
                     self.Plateau.JoueurActuel = self.Plateau.ListeJoueurs[self.NumJoueur]
-                    self.Text.setText(f"L'adversaire n'a pas d'attaque. Le joueur {self.NumJoueur} prend la main")
+                    self.Text.setText(f"L'adversaire n'a pas d'attaque. Le joueur {self.NumJoueur} prend la main\nPhase d'attaque")
                     self.TransitionJoueur()
                 else:
+                    #Sinon on vérifie que le joueur peut se défendre, s'il ne peut pas -> GameOver, s'il peut -> Phase de défense
                     self.Fin = not self.Plateau.JoueurActuel.VerifDefense( self.Plateau.ListeTete.Top().Attq)
                     if self.Fin:
                         self.Text.setText(f"Game Over ! Le joueur {self.NumJoueur} ne peut pas se défendre de {self.Plateau.ListeTete.Top().Attq}")
@@ -235,17 +246,24 @@ class MainWindow(QWidget):
             self.actualise()
             self.unclick()
             
-            
+        #Si on est en phase de Défense au moment du click
         elif self.Phase == "Défense":
+            
+            #Si la saisie est valide
             if not SaisieInvalide:
+                #On lance une phase de défense, puis on change de joueur
                 self.Plateau.Phase_Defense(UI=True, UI_Selection=selection_carte)
                 self.NumJoueur = (self.NumJoueur+1)%(len(self.Plateau.ListeJoueurs))
                 self.JoueurActuel = self.Plateau.ListeJoueurs[self.NumJoueur]
                 self.Plateau.JoueurActuel = self.Plateau.ListeJoueurs[self.NumJoueur]
                 self.TransitionJoueur()
+                #On repasse en phase d'attaque
                 self.Phase = "Attaque"
                 self.Text.setText("Phase d'attaque")
+            
                 
+                #Condition de gameover un peu particulière.
+                #Si le joueur suivant n'a aucune carte dans sa main, et que l'adversaire peut attaquer, on annonce directement le GameOver
                 self.Fin = len(self.Plateau.JoueurActuel.main)==0 and self.Plateau.ListeTete.Top().Attq>0
                 if self.Fin:
                     self.HidePlateau()
@@ -254,10 +272,18 @@ class MainWindow(QWidget):
                     self.Musique.setLoops(100000)
                     self.Musique.play()
                 
+            #Si la saisie n'est pas valide
+            else:
+                #On le dit.
+                self.Text.setText(self.Text.text().replace("\nLa sélection est invalide", "") + "\nLa sélection est invalide")
+                #Return None pour ne pas aller plus loin
+                return None
             
             #On actualise l'UI et on désélectionne la sélection.
             self.actualise()
             self.unclick()
+            
+            
             
         #Victoire
         if self.Plateau.ListeTete.EstVide():
@@ -272,6 +298,7 @@ class MainWindow(QWidget):
             self.Musique.play()
     
     def actualise_main(self, Joueur):
+        """Actualise la main d'un joueur dans l'UI"""
         main = Joueur.main
         for i in range(9):
             try:
@@ -291,7 +318,7 @@ class MainWindow(QWidget):
                 
             
     def actualise_adversaire(self,Tete):
-        
+        """Actualise l'adversaire en cours dans l'UI"""
         if Tete != None:
             carte = Tete.valeur + Tete.couleur.norm()
             
@@ -304,6 +331,7 @@ class MainWindow(QWidget):
             self.Attq.setText(f"Attq : {Tete.Attq}")
 
     def actualise_pioche(self, Pioche):
+        """Actualise la Pioche dans l'UI"""
         if len(Pioche) == 0:
             pixmap = QtGui.QPixmap("Cartes/Dummy.png")
         else:
@@ -312,6 +340,7 @@ class MainWindow(QWidget):
         self.CartesRestantes.setText(str(len(self.Plateau.Pioche)))
     
     def actualise_defausse(self,Defausse):
+        """Actualise la Défausse dans l'UI"""
         if len(Defausse) != 0:
             Carte = Defausse.Defausse[-1]
             pixmap = QtGui.QPixmap(f"Cartes/{Carte.valeur + Carte.couleur.norm()}.png")
@@ -323,6 +352,7 @@ class MainWindow(QWidget):
         self.CartesDefausse.setText(str(len(self.Plateau.Defausse)))
         
     def actualise_Mains(self):
+        """Actualise les mains des joueurs dans l'UI"""
         for i in range(len(self.Mains)):
             Joueur_i = self.Plateau.ListeJoueurs[i]
             
@@ -334,6 +364,7 @@ class MainWindow(QWidget):
             self.Mains[i].setText(f"Joueur {i} : {str(len(Joueur_i.main))} cartes")
             
     def actualise_TetesVisibles(self):
+        """Actualise la liste des adversaires suivants dans l'UI"""
         if self.Plateau.ListeTete.EstToutInvisible():
             self.Plateau.ListeTete.Revele4Cartes()    
         for i in range(3):
@@ -351,6 +382,7 @@ class MainWindow(QWidget):
                 self.TetesVisibles[i].setPixmap(pixmap)
                 
     def actualise_CartesJouees(self):
+        """Actualise les cartes jouées dans l'UI"""
         for i in range(16):
             try:
                 CarteJouee = self.Plateau.CartesJouees.liste[i]
@@ -363,7 +395,7 @@ class MainWindow(QWidget):
                 
         
     def actualise(self):
-        """Actualise l'affichage"""
+        """Actualise tout l'affichage"""
         self.actualise_main(self.JoueurActuel)
         self.actualise_adversaire(self.Plateau.ListeTete.Top())
         self.actualise_pioche(self.Plateau.Pioche)
@@ -397,11 +429,13 @@ class MainWindow(QWidget):
         self.Validate.show()
         
     def ShowInterfaceJoker(self):
+        """Montre l'interface de sélection d'un nouveau joueur lors de l'utilisation d'un joker"""
         self.HidePlateau()
         self.TransitionJoker.show()
         self.SelectJoueur.show()
         
     def TransitionJoueur(self):
+        """Montre l'interface pour changer de joueur, pour éviter que le joueur précédent voit la main du joueur suivant"""
         self.HidePlateau()
         self.Transition.show()
         self.Transition.setText(f"Le joueur {self.NumJoueur} va prendre la main")
@@ -414,7 +448,7 @@ class MainWindow(QWidget):
 if __name__ == '__main__':
     #Ouverture de la fenêtre principale
     app = QApplication(sys.argv)
-    ui = MainWindow(2)
+    ui = MainWindow(3)
     ui.setWindowTitle("PyQTicide")
     
     ui.setupUi()
