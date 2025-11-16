@@ -1,4 +1,4 @@
-### PyQTicide
+# PyQTicide
 ## Régicide
 Régicide est un jeu coopérative se jouant de 1 à 4 joueurs. Il a été crée par Paul Abrahams, Luke Badger et Andy Richdale
 PyQTicide est une adaptation du jeu réalisé avec PyQT dans un cadre scolaire. La version actuelle ne gère pas le mode solo.
@@ -22,3 +22,4 @@ Un tour classique se présente sous la forme :
 - On passe au joueur{i+1} (Sauf si l'adversaire est mort auquel cas on reste au joueur{i}) 
 
 L'ensemble des règles officielles peuvent se trouver ici : https://iello.fr/jeux/regicide/
+
