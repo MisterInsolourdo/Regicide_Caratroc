@@ -69,7 +69,23 @@ Le jeu se joue de la même façon en mode UI.
 Les combinaisons se jouent en cliquant sur les cartes que l'on souhaite jouer puis en cliquant sur le bouton "Valider"
 Si le joueur ne veut pas jouer, il peut cliquer sur passer (Il se fera quand même attaquer)
 
-Lors de la phase de défense : 
+Lors de la phase de défense, comme l'image du dessus, un message s'affiche disant au joueur de combien il doit se défendre. De la même façon, il doit sélectionner les cartes qu'il souhaite défausser et valider.
+
+L'interface est constituée plusieurs éléments : 
+
+<img width="795" height="619" alt="image" src="https://github.com/user-attachments/assets/99b257d0-f4d2-4c37-b9bb-e575985038c1" />
+
+1 : La pioche et combien de cartes il reste dedans.
+2 : Les cartes défaussées et combien il y en a dedans. La carte du haut est toujours visible.
+3 : La carte de l'adversaire et ses statistiques de Point de Vie et d'Attaque
+4 : Les futures cartes à affronter (Seules ceux de la même valeur, ici Valet, sont visibles)
+5 : La main du joueur dans laquelle on sélectionne les cartes à jouer.
+6 : Les joueurs et le nombre de cartes qu'ils ont en main. Le joueur en rouge est le joueur en cours.
+7 : Les cartes actuellement jouées lors de l'affrontement avec l'adversaire (Elles rejoignent la défausse lorsque l'adversaire est vaincu)
+8 : Les boutons pour Valider sa Combinaise ou Passer
+9 : Un morceau de texte qui explique au joueur dans quelle phase il est.
+
+
 
 
 
