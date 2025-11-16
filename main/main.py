@@ -10,49 +10,53 @@ from listes import Pioche, Defausse, ListeTete, CartesJouees
     
 class Plateau:
     def __init__(self,nb_joueur):
+        #Initialisation
         self.Pioche = Pioche(nb_joueur)
         self.Defausse = Defausse()
         self.CartesJouees = CartesJouees()
         self.ListeTete = ListeTete()
         self.ListeJoueurs = [Joueur(i,[],nb_joueur) for i in range(nb_joueur)]
+        self.NumJoueur = 0
+        self.JoueurActuel = self.ListeJoueurs[0]
         self.Fin = False
         self.Win = False
         
     def BoucleDeJeu(self):
+        """Initie la boucle de jeu
+            On initialise la Pioche
+            On choisit qui est le premier joueur
+            Puis tant que le jeu n'est pas soit perdu, soit gagné, on alterne les phases de défense et d'attaque"""
+        
         self.PiocheInitiale()
-        NumJoueur = int(input("Sélectionner le joueur débutant la partie : "))
-        JoueurActuel = self.ListeJoueurs[NumJoueur]
+        self.NumJoueur = int(input("Sélectionner le joueur débutant la partie : "))
+        self.JoueurActuel = self.ListeJoueurs[self.NumJoueur]
+        
+        #Tant qu'on a ni perdu ni gagné.
         while not self.Fin:
+            
+            #S'il n'y a plus de têtes, le jeu est gagné.
             if self.ListeTete.EstVide():
                 self.Win = True
                 self.Fin = True
+            
+            #S'il y a des têtes et qu'elles sont toutes invisibles, on en révèle quatre
             elif self.ListeTete.EstToutInvisible():
                 self.ListeTete.Revele4Cartes()
-            if self.Fin:
-                continue
-            SaisieInvalide = True
-            while SaisieInvalide:
-                print(self.ListeTete)
-                print(f"Pioche : {len(self.Pioche)} ; Défausse : {len(self.Defausse)}")
-                print(self.ListeTete.Top())
-                print(JoueurActuel)
-                selection_carte = input("Sélectionner les cartes à jouer : ")
-                if selection_carte == "passe":
-                    SaisieInvalide = False
-                else:
-                    SaisieInvalide = not(self.ComboFormat(selection_carte) and self.ComboAcceptable(selection_carte) and self.ComboMain(selection_carte,JoueurActuel) or selection_carte == "passe")
-            if selection_carte != "passe":
-                Combo = selection_carte.split(";")
-                self.CartesJouees.AjoutCarte(Combo)
-                JoueurActuel.JoueCartes(Combo)
-                self.ListeTete.Top().PrendreDegats(self.SommeCombo(Combo))
-                Result = self.ActivePouvoir(Combo,NumJoueur)
-                if Result != None:
-                    JoueurActuel = self.ListeJoueurs[Result]
-                    continue
-            else:
-                pass
             
+            #Si on a gagné ou perdu, on sort de la boucle
+            if self.Fin:
+                if self.Win:
+                    print("Gagné")
+                else:
+                    print("Perdu")
+                break
+            
+            #Phase d'attaque. Si le joueur a joué un joker, on zappe la phase de défense
+            Joker = self.Phase_Attaque()
+            if Joker:
+                continue
+            
+            #On vérifie si l'adversaire est mort ou non. Si non, on entre en phase de Défense.
             if self.ListeTete.Top().VerifieMort():
                 print("L'adversaire est mort.\n")
                 self.Defausse.AddDefausse(self.CartesJouees.liste)
@@ -64,35 +68,27 @@ class Plateau:
                 else:
                     print("La carte de l'adversaire est placée en bas de la défausse. \n ")
                     self.ListeTete.TopVersDefausse(self.Defausse)
-                
+            
             else:
-                if self.ListeTete.Top().Attq > 0:
-                    print(f"L'adversaire vous attaque avec une puissance de {self.ListeTete.Top().Attq}, vous devez défausser cette somme pour survivre")
-                    self.Fin = not JoueurActuel.VerifDefense(self.ListeTete.Top().Attq)
-                    if self.Fin:
-                        print("Perdu")
-                        continue
-                    SaisieInvalide = True
-                    while SaisieInvalide:
-                        print(JoueurActuel)
-                        selection_carte = input("Sélectionner les cartes à jouer : ")
-                        SaisieInvalide = not(self.ComboFormat(selection_carte) and self.ComboMain(selection_carte,JoueurActuel) and self.ComboAttq(selection_carte,self.ListeTete.Top().Attq))
-                    Combo = selection_carte.split(";")
-                    JoueurActuel.DefausseCarte(Combo,self.Defausse)
+                #On teste si l'attaque de l'adversaire n'est pas 0, pour ne pas lancer de phase de défense inutilement. 
+                if self.ListeTete.Top().Attq <= 0:
+                    print("L'adversaire n'a pas d'attaque.")
                 else:
-                    print("L'adversaire n'a pas d'attaque, il ne peut pas vous attaquer.")
-                    
-                NumJoueur = (NumJoueur+1)%(len(self.ListeJoueurs))
-                input(f"Le joueur {NumJoueur} va prendre la main, appuyer sur Entrée pour continuer : ")
-                JoueurActuel = self.ListeJoueurs[NumJoueur]                
+                    #Si l'adversaire a de l'attaque -> Phase de défense.
+                    #Test : Si le joueur ne peut pas se défendre. Le jeu est perdu, on revient au début de la boucle pour afficher le message et break
+                    EstPerdu = self.Phase_Defense()
+                    if EstPerdu:
+                        continue
                 
     def PiocheInitiale(self):
+        """Tous les joueurs piochent initialement le nombre maximal de cartes qu'ils peuvent dans le mode de jeu"""
         for joueur in self.ListeJoueurs:
             for i in range(joueur.taillemax):
                 joueur.Pioche(self.Pioche)
                 
     def ComboFormat(self,combo:str):
         """Teste si la combinaison de cartes est un combo au bon format"""
+        
         num = ['1','2','3','4','5','6','7','8','9','10','V','D','R']
         couleur = ['c','d','t','j','p']
         Combinaison_valide = []
@@ -150,8 +146,9 @@ class Plateau:
                 print("Le combo n'est pas acceptable, un combo sans as, doit être fait avec des cartes donc la somme < 10")
                 return False
             
-    def ComboMain(self,combo,joueur):
-        main = joueur.main.copy()
+    def ComboMain(self,combo):
+        """Teste si la combinaison de cartes proposée est bien présente dans la main du joueur"""
+        main = self.JoueurActuel.main.copy()
         v = combo.split(";")
         Bool = True
         for combi in v:
@@ -167,6 +164,7 @@ class Plateau:
         return Bool
     
     def SommeCombo(self,combo):
+        """Somme les valeurs des cartes d'un combo"""
         s = 0
         for el in combo:
             if el[:-1] == "V":
@@ -181,6 +179,7 @@ class Plateau:
         return s
     
     def ComboAttq(self,combo,Attq):
+        """Teste si le combo joué est bien supérieur à l'Attaque, lors d'une défense avec une attaque de Attq"""
         Combo = combo.split(";")
         Somme = self.SommeCombo(Combo)
         if Somme < Attq:
@@ -189,28 +188,103 @@ class Plateau:
         else:
             return True
     
-    def ActivePouvoir(self,combo,num_joueur):
+    def ActivePouvoir(self,combo, UI=False):
+        """Active l'ensemble des pouvoirs d'un combo"""
         Somme = self.SommeCombo(combo)
         Immu = self.ListeTete.Top().Immu
+        #Liste pouvoir stocke les pouvoirs déjà utilisés pour éviter une double activation
+        Liste_Pouvoir = []
         for el in combo:
-            if el[-1] == 'c' and Immu != Couleur('c'):
+            
+            if el[-1] == 'c' and Immu != Couleur('c') and (not 'c' in Liste_Pouvoir):
                 print(f"Récupération de {Somme} cartes de la défausse.")
+                Liste_Pouvoir.append(el[-1])
                 self.Defausse.VideDefausse(Somme,self.Pioche)
-            if el[-1] == 'p' and Immu != Couleur('p'):
+            if el[-1] == 'p' and Immu != Couleur('p') and (not 'p' in Liste_Pouvoir):
                 print(f"L'adversaire perd {Somme} Attq")
                 self.ListeTete.Top().DiminueAttaque(Somme)
-            if el[-1] == 't' and Immu != Couleur('t'):
+                Liste_Pouvoir.append(el[-1])
+            if el[-1] == 't' and Immu != Couleur('t') and (not 't' in Liste_Pouvoir):
                 print("Doubles dégats !")
                 self.ListeTete.Top().PrendreDegats(Somme)
+                Liste_Pouvoir.append(el[-1])
+            if el[-1] == 'd' and Immu != Couleur('d') and (not 'd' in Liste_Pouvoir):
+                print(f"Pioche de {Somme} cartes.")
+                self.PiocheCarreau(Somme,self.NumJoueur)
+                Liste_Pouvoir.append(el[-1])
             if el[-1] == 'j':
                 print("Annulation du pouvoir")
                 self.ListeTete.Top().Immu = Couleur('j')
-                NumJoueur = int(input("Un joker a été joué, sélectionnez le joueur jouant après :"))
-                return NumJoueur
+                if UI == False:
+                    self.NumJoueur = int(input("Un joker a été joué, sélectionnez le joueur jouant après :"))
+                return "Joker"
             
-            if el[-1] == 'd' and Immu != Couleur('d'):
-                print(f"Pioche de {Somme} cartes.")
-                self.PiocheCarreau(Somme,num_joueur)
+            
+            
+                
+    def Phase_Attaque(self, UI=False, UI_Selection=None):
+        """Permet de jouer une phase d'attaque
+        Le joueur choisit un combo valide de cartes dans sa main
+        Les dégats sont infligés
+        Les pouvoirs de chacunes des cartes sont appliqués
+        """
+        
+        
+        if not UI:
+            SaisieInvalide = True
+            while SaisieInvalide:
+                print(self.ListeTete)
+                print(f"Pioche : {len(self.Pioche)} ; Défausse : {len(self.Defausse)}")
+                print(self.ListeTete.Top())
+                print(self.JoueurActuel)
+                
+                #Saisie et Test de la validité du combo
+                selection_carte = input("Sélectionner les cartes à jouer : ")
+                if selection_carte == "passe":
+                    SaisieInvalide = False
+                else:
+                    SaisieInvalide = not(self.ComboFormat(selection_carte) and self.ComboAcceptable(selection_carte) and self.ComboMain(selection_carte) or selection_carte == "passe")
+        else:
+            selection_carte = UI_Selection
+            
+        if selection_carte != "passe":
+            Combo = selection_carte.split(";")
+            self.CartesJouees.AjoutCarte(Combo)
+            self.JoueurActuel.JoueCartes(Combo)
+            self.ListeTete.Top().PrendreDegats(self.SommeCombo(Combo))
+            Result = self.ActivePouvoir(Combo,UI)
+            if Result != None:
+                self.JoueurActuel = self.ListeJoueurs[self.NumJoueur]
+                return True
+        else:
+            pass
+    
+    def Phase_Defense(self, UI=False, UI_Selection=None):
+        #Si l'adversaire a de l'attaque : Il attaque
+        print(f"L'adversaire vous attaque avec une puissance de {self.ListeTete.Top().Attq}, vous devez défausser cette somme pour survivre")
+        self.Fin = not self.JoueurActuel.VerifDefense(self.ListeTete.Top().Attq)
+        if self.Fin:
+            return True
+        
+        if not UI:
+            SaisieInvalide = True
+            while SaisieInvalide:
+                print(self.JoueurActuel)
+                selection_carte = input("Sélectionner les cartes à jouer : ")
+                SaisieInvalide = not(self.ComboFormat(selection_carte) and self.ComboMain(selection_carte) and self.ComboAttq(selection_carte,self.ListeTete.Top().Attq))
+        else:
+            selection_carte = UI_Selection
+            
+        Combo = selection_carte.split(";")
+        self.JoueurActuel.DefausseCarte(Combo,self.Defausse)
+        
+        #Sinon : On ne fait rien
+        
+        #On passe au joueur suivant
+        self.NumJoueur = (self.NumJoueur+1)%(len(self.ListeJoueurs))
+        if not UI:
+            input(f"Le joueur {self.NumJoueur} va prendre la main, appuyer sur Entrée pour continuer : ")
+        self.JoueurActuel = self.ListeJoueurs[self.NumJoueur]           
                 
     def PiocheCarreau(self,n,num_joueur):
         s = n

@@ -90,7 +90,7 @@ class ListeTete:
         random.shuffle(Valet) 
         random.shuffle(Dame)
         random.shuffle(Roi)
-        self.liste = Valet #+ Dame + Roi
+        self.liste = Valet + Dame + Roi
         
     def EstVide(self):
         return self.liste == []
@@ -103,10 +103,13 @@ class ListeTete:
         return Bool
     
     def Revele4Cartes(self):
-        for i in range(4):
-            self.liste[i].DevientVisible()
+        if len(self.liste) != 0:
+            for i in range(4):
+                self.liste[i].DevientVisible()
             
     def Top(self):
+        if len(self.liste)==0:
+            return None
         return self.liste[0]
     
     def TopVersPioche(self,deck):
