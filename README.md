@@ -62,7 +62,12 @@ Entre le tour de chaque joueur, un message apparait et attend juste qu'on appuie
 
 ### Interface graphique (UI)
 
-Le jeu se joue de la même façon en mode UI.
+Le jeu se joue de la même façon en mode UI. Il se situe dans UI.py
+Pour changer le nombre de joueur, modifier la valeur ici : 
+if __name__ == '__main__':
+    ...
+    ui = MainWindow(2)
+    ...
 
 <img width="799" height="621" alt="image" src="https://github.com/user-attachments/assets/6ea785da-38e1-4579-8008-ac31351cab66" />
 
@@ -84,6 +89,23 @@ L'interface est constituée plusieurs éléments :
 - 7 : Les cartes actuellement jouées lors de l'affrontement avec l'adversaire (Elles rejoignent la défausse lorsque l'adversaire est vaincu)
 - 8 : Les boutons pour Valider sa Combinaise ou Passer
 - 9 : Un morceau de texte qui explique au joueur dans quelle phase il est.
+
+Il existe deux autres sous-menus : 
+
+Un menu pour simplement changer de joueur (Pour pas que le joueur précédent voit la main du suivant)
+Il suffit alors de cliquer sur le bouton de changement pour changer de joueur et revenir au menu de base.
+
+<img width="799" height="619" alt="image" src="https://github.com/user-attachments/assets/d5ca3254-bdef-45f4-b97c-3a9773f980c4" />
+
+Un menu propre à l'utilisation du Joker.
+Le Joker annule l'Immunité de l'adversaire et permet de changer de joueur sans passer par la phase de Défense/Défausse
+Ainsi le menu suivant sert simplement à changer de joueur. 
+
+<img width="799" height="619" alt="image" src="https://github.com/user-attachments/assets/65d7cd26-89c6-4e51-9484-c374a825a32e" />
+
+On choisit le joueur qui prend la main dans la QSpinBox (1)
+Puis on valide
+
 
 
 
