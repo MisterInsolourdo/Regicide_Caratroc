@@ -1,7 +1,7 @@
 # PyQTicide
 ## Régicide
 Régicide est un jeu coopérative se jouant de 1 à 4 joueurs. Il a été crée par Paul Abrahams, Luke Badger et Andy Richdale
-PyQTicide est une adaptation du jeu réalisé avec PyQT dans un cadre scolaire. La version actuelle ne gère pas le mode solo.
+PyQTicide est une adaptation du jeu réalisé avec PyQT dans un cadre scolaire par F.Lépinay. La version actuelle ne gère pas le mode solo.
 
 Le but du jeu est de vaincre l'ensemble des têtes (Valet, Dame, Roi) avec ses mains, la pioche et la défausse.
 Les têtes constituent les adversaires que l'on doit vaincre à chaque tour. Ils ont une attaque variable (10,15,20) contre laquelle il faut se défendre à chaque tour en défaussant cette valeur.
@@ -105,6 +105,7 @@ Ainsi le menu suivant sert simplement à changer de joueur.
 
 On choisit le joueur qui prend la main dans la QSpinBox (1)
 Puis on valide
+
 
 
 
