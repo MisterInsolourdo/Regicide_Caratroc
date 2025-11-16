@@ -21,5 +21,45 @@ Un tour classique se présente sous la forme :
 - L'adversaire, s'il n'est pas mort, attaque le joueur{i}
 - On passe au joueur{i+1} (Sauf si l'adversaire est mort auquel cas on reste au joueur{i}) 
 
+Un combo valide est :
+- Soit une carte seule
+- Soit un as et une autre carte
+- Soit X fois la même carte à condition que la somme des cartes soit inférieure ou égale à 10.
+
 L'ensemble des règles officielles peuvent se trouver ici : https://iello.fr/jeux/regicide/
+
+## Lancer le jeu
+Le jeu est disponible sous deux formats : En ligne de commande ou avec une interface graphique (UI)
+### En ligne de commande
+Le fichier main.py contient le jeu en ligne de commandes.
+
+On peut modifier ces lignes pour changer le nombre de joueur sur le plateau
+if __name__ == "__main__":
+    plat = Plateau(2)
+    plat.BoucleDeJeu()
+
+Le jeu commence par demander le numéro du joueur qui va commencer.
+A chaque étape, seront affichés en ligne de commande :
+Les têtes suivantes qui sont visibles
+Le nombre de cartes restant dans la Pioche ; dans la Défausse
+L'Adversaire actuellement en jeu ; Son Attaque ; Ses PVs ; Et le pouvoir auquel il est immunisé.
+La main du joueur à qui c'est le tour.
+
+Pour jouer le joueur doit joueur une combinaison valide de sa main ou passer.
+
+Pour cela, il doit écrire :
+- Soit "passe" pour passer
+- Soit une combinaison de cartes valides sous un format spécifique. Ce format spécifique est de la forme ValeurCouleur avec Valeur:{0;1;2;3;4;5;6;7;8;9;10;V;D;R} et Couleur:{j;p;t;c;d} avec  j:Joker-p:Pique-t:Trèfle-c:Coeur-d:Carreau(Diamond)
+- La combinaison doit être séparée par des ; et être présente dans la main du joueur
+
+Ainsi les combinaisons :
+"5t;5c" joue un combo de 5 de Trèfle et de 5 de Coeur
+"7d" joue un 7 de Carreau
+"0j" joue le Joker (seule carte de valeur 0)
+
+Puis le joueur doit éventuellement se défendre en jouant des cartes dont la somme est supérieure à l'attaque de l'adversaire, en tapant les cartes qu'il veut défausser sous le même format.
+
+### UI
+
+
 
