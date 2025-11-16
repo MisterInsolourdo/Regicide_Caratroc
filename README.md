@@ -58,8 +58,15 @@ Ainsi les combinaisons :
 "0j" joue le Joker (seule carte de valeur 0)
 
 Puis le joueur doit éventuellement se défendre en jouant des cartes dont la somme est supérieure à l'attaque de l'adversaire, en tapant les cartes qu'il veut défausser sous le même format.
+Entre le tour de chaque joueur, un message apparait et attend juste qu'on appuie sur entrée pour passer au joueur suivant (Pour éviter que le joueur voir la main de son coéquipier)
 
-### UI
+### Interface graphique (UI)
+
+Le jeu se joue de la même façon en mode UI.
+<img width="799" height="621" alt="image" src="https://github.com/user-attachments/assets/6ea785da-38e1-4579-8008-ac31351cab66" />
+
+
+
 
 
 
