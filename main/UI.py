@@ -105,7 +105,7 @@ class MainWindow(QWidget):
         self.SelectJoueur.setMinimum(0)
         self.SelectJoueur.setMaximum(n-1)
         self.SelectJoueur.setGeometry(QtCore.QRect(230,300,340,40))
-        self.SelectJoueur.setPrefix("Joker Activé, sélectionner le prochain joueur à jouer : ")
+        self.SelectJoueur.setPrefix("Joker Activé, prochain joueur à jouer : ")
         self.SelectJoueur.hide()
         
         #Un bouton de transition entre un Joker et le plateau
@@ -456,3 +456,4 @@ if __name__ == '__main__':
     
 
     sys.exit(app.exec_())
+
