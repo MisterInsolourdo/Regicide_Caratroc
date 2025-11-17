@@ -342,7 +342,7 @@ class MainWindow(QWidget):
     def actualise_defausse(self,Defausse):
         """Actualise la Défausse dans l'UI"""
         if len(Defausse) != 0:
-            Carte = Defausse.Defausse[-1]
+            Carte = Defausse.Defausse[0]
             pixmap = QtGui.QPixmap(f"Cartes/{Carte.valeur + Carte.couleur.norm()}.png")
             self.Defausse.setPixmap(pixmap)
         else:
@@ -454,4 +454,5 @@ if __name__ == '__main__':
     ui.setupUi()
     ui.show()
     
+
     sys.exit(app.exec_())
