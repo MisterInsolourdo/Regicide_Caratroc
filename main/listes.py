@@ -71,10 +71,10 @@ class Defausse:
         if n > len(self.Defausse):
             nb_cartes = len(self.Defausse)
         
-        Cartes_Recup = self.Defausse[:nb_cartes]
+        Cartes_Recup = self.Defausse[nb_cartes:]
         Cartes_Recup.reverse()
         
-        self.Defausse = self.Defausse[nb_cartes:]
+        self.Defausse = self.Defausse[:nb_cartes]
         deck.Recup(Cartes_Recup)
         
         
@@ -169,4 +169,5 @@ class CartesJouees:
         s = ""
         for el in self.liste:
             s += str(el) + "\n"
+
         return s
